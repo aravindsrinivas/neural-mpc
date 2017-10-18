@@ -185,7 +185,7 @@ def train(env,
     # 
     #normalization = """ YOUR CODE HERE """
     normalization = compute_normalization(paths)
-
+    
     #========================================================
     # 
     # Build dynamics model and MPC controllers.
