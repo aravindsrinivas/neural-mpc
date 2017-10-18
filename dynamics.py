@@ -77,7 +77,7 @@ class NNDynamicsModel():
             batch_acts = normalized_actions[indices, :]
             batch_deltas = normalized_deltas[indices,:]
             self.sess.run(self.train_op, feed_dict = {self._s: batch_obs, self._a: batch_acts, self._deltas: batch_deltas})
-            print "Dynamics Loss", self.sess.run(self.pred_error, feed_dict={self._s: batch_obs, self._a: batch_acts, self._deltas: batch_deltas})
+            #print "Dynamics Loss", self.sess.run(self.pred_error, feed_dict={self._s: batch_obs, self._a: batch_acts, self._deltas: batch_deltas})
         """
         Write a function to take in a dataset of (unnormalized)states, (unnormalized)actions, (unnormalized)next_states and fit the dynamics model going from normalized states, normalized actions to normalized state differences (s_t+1 - s_t)
         """
