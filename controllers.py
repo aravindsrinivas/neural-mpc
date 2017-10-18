@@ -13,10 +13,10 @@ class Controller():
 
 class RandomController(Controller):
     def __init__(self, env):
-        pass
+        self.env = env
 
     def get_action(self, state):
-        return env.action_space.sample()
+        return self.env.action_space.sample()
 	#pass
 
 
@@ -29,17 +29,19 @@ class MPCcontroller(Controller):
         self.num_simulated_paths = num_simulated_paths
 
     def get_action(self, state):
-        trajs = [env.action_space.sample() for _ in range(self.horizon*self.num_simulated_paths)].reshape((self.num_simulated_paths, self.horizon, -1))
+        # horizon * num_paths* state_dim or action_dim 
+
+        trajs = np.array([self.env.action_space.sample() for _ in range(self.horizon*self.num_simulated_paths)]).reshape((self.horizon, self.num_simulated_paths, -1))
         #TODO: action_dim #n_paths*horizon*action_dim
-        accum_states = np.zeros((self.num_simulated_paths, self.horizon, state.shape[0]))
-        accum_next_states = np.zeros((self.num_simulated_paths, self.horizon, state.shape[0]))
-        states = np.ones((num_simulated_paths,1))*state # n_paths*state_dim
+        accum_states = np.zeros((self.horizon, self.num_simulated_paths, state.shape[0]))
+        accum_next_states = np.zeros((self.horizon, self.num_simulated_paths, state.shape[0]))
+        states = np.ones((self.num_simulated_paths,1))*state # n_paths*state_dim
         for time_idx in range(self.horizon):
-            actions = trajs[:, time_idx, :] # n_paths * action_dim
+            actions = trajs[time_idx, :, :] # n_paths * action_dim
             next_states = self.dyn_model.predict(states, actions)
-            accum_states[:, time_idx, :] = states
-            accum_next_states[:, time_idx, :] = next_states
+            accum_states[time_idx,:, :] = states
+            accum_next_states[time_idx,:, :] = next_states
             next_states = states.copy()
             cost = trajectory_cost_fn(self.cost_fn, accum_next_states, trajs, accum_states)
-            action = trajs[np.argmax(cost), 0, :]
-            return action
+            action = trajs[0,np.argmax(cost),:]
+            return action.flatten()

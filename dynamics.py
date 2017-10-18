@@ -42,13 +42,13 @@ class NNDynamicsModel():
         self.iterations = iterations
         self.learning_rate = learning_rate
         self.sess = sess
-        self._state_dim = env._get_obs.shape()[0]
-        self._action_dim = env.action_space.sample().shape()[0]   #TODO
+        self._state_dim = env._get_obs().shape[0]
+        self._action_dim = env.action_space.sample().shape[0]   #TODO
         self._s = tf.placeholder(tf.float32, [None, self._state_dim])
-        self._a = tf.placeholder(tf.float32, [None, self._act_dim])
+        self._a = tf.placeholder(tf.float32, [None, self._action_dim])
         self._deltas = tf.placeholder(tf.float32, [None, self._state_dim])
         self._s_a = tf.concat([self._s, self._a], axis=1)
-        self.delta_pred = build_mlp(self._s_a, self.state_dim, 'dynamics', n_layers=n_layers, size=size, activation = activation, output_activation=output_activation)
+        self.delta_pred = build_mlp(self._s_a, self._state_dim, 'dynamics', n_layers=n_layers, size=size, activation = activation, output_activation=output_activation)
         self.pred_error = tf.reduce_mean(tf.reduce_sum(tf.square(self.delta_pred - self._deltas), reduction_indices = [1]))
         optimizer = tf.train.AdamOptimizer(learning_rate)
         self.train_op = optimizer.minimize(self.pred_error)

@@ -1,28 +1,6 @@
 import numpy as np
 import sys
-sys_paths = ['/Users/aravind/drl/mjc/lib/python3.6/site-packages',
- '',
- '/Users/aravind/anaconda/bin',
- '/Users/aravind/anaconda/lib/python3.6/site-packages',
- '/usr/local/lib/python3.6/site-packages',
- '/usr/local/Cellar/python3/3.6.2/bin/python3.6',
- '/Users/aravind/rllab',
- '/Users/aravind/homework/hw4',
- '/Users/aravind/Lasagne',
- '/Users/aravind/anaconda/lib/python36.zip',
- '/Users/aravind/anaconda/lib/python3.6',
- '/Users/aravind/anaconda/lib/python3.6/lib-dynload',
- '/Users/aravind/anaconda/lib/python3.6/site-packages/Sphinx-1.5.6-py3.6.egg',
- '/Users/aravind/anaconda/lib/python3.6/site-packages/aeosa',
- '/Users/aravind/Theano',
- '/Users/aravind/anaconda/lib/python3.6/site-packages/gym-0.9.3-py3.6.egg',
- '/Users/aravind/anaconda/lib/python3.6/site-packages/setuptools-27.2.0-py3.6.egg',
- '/Users/aravind/anaconda/lib/python3.6/site-packages/IPython/extensions',
- '/Users/aravind/.ipython',
- '/Users/aravind/gym']
 
-for syspath in sys_paths:
-    sys.path.append(sys_paths)
 import tensorflow as tf
 import gym
 from dynamics import NNDynamicsModel
@@ -34,8 +12,6 @@ import os
 import copy
 import matplotlib.pyplot as plt
 from cheetah_env import HalfCheetahEnvNew
-
-
 
 gamma = 1.
 
@@ -77,7 +53,7 @@ def sample(env,
         path['observations'] = path_obs
         path['next_observations'] = path_next_obs
         path['rewards'] = path_rewards
-        path['returns'] = path_returns
+        #path['returns'] = path_returns
         path['actions'] = path_actions
         path['return'] = path_return
         #path['returns'] = scipy.signal.lfilter([1],[1,-gamma], path['rewards'][::-1], axis = 0)[::-1]
@@ -194,7 +170,7 @@ def train(env,
     paths = sample(env,
            random_controller,
            num_paths=num_paths_random,
-           horizon=mpc_horizon,
+           horizon=env_horizon,
            render=False,
            verbose=False)
     
@@ -250,7 +226,15 @@ def train(env,
         """ YOUR CODE HERE """
 
         dyn_model.fit(paths)
-        new_paths = sample(env,mpc_controller, num_paths=num_paths_mpc,horizon=mpc_horizon,render=False,verbose=False)
+        new_paths = sample(env,mpc_controller, num_paths=num_paths_onpol,horizon=env_horizon,render=False,verbose=False)
+        costs = []
+        returns = []
+        for new_path in new_paths:
+            cost = path_cost(cost_fn, new_path)
+            costs.append(cost)
+            returns.append(new_path['return'])
+        costs = np.array(costs)
+        returns = np.array(returns)
         paths = paths + new_paths # Aggregation
         # LOGGING
         # Statistics for performance of MPC policy using
@@ -280,7 +264,7 @@ def main():
     parser.add_argument('--render', action='store_true')
     # Training args
     parser.add_argument('--learning_rate', '-lr', type=float, default=1e-3)
-    parser.add_argument('--onpol_iters', '-n', type=int, default=1)
+    parser.add_argument('--onpol_iters', '-n', type=int, default=15)
     parser.add_argument('--dyn_iters', '-nd', type=int, default=60)
     parser.add_argument('--batch_size', '-b', type=int, default=512)
     # Data collection
