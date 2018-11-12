@@ -6,6 +6,17 @@ import numpy as np
 # Environment-specific cost functions:
 #
 
+def swimmer_cost_fn(state, action, next_state):
+    if len(state.shape) > 1:
+
+        
+        scores=np.zeros((state.shape[0],))
+        torso_y = state[:,1]
+        my_range = 0.2 #TODO
+        scores[abs(torso_y) >= my_range] += deviating_penalty_factor
+        scores[abs(torso_y)
+
+
 def cheetah_cost_fn(state, action, next_state):
     if len(state.shape) > 1:
 
